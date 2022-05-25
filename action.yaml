@@ -3,26 +3,32 @@ description: 'Build an React application. Intended to be used in conjunction wit
 
 inputs:
   repository:
-    description: 'Which repository are we building?'
+    description: 'Github Repo'
     required: true
   app-name:
-    description: 'App name. Used for param store lookups.'
+    description: 'App name.'
     required: true
   target-environment:
-    description: 'Where are we deploying this?'
+    description: 'Environment to deploy to'
     required: true
     default: 'None'
   token:
     description: 'The github token to authenticate with'
-    required: true       
-  aws-build-role:
-    description: 'The relevant dev build role for AWS stuff.'
     required: true
+  aws-role-dev:
+    description: 'The relevant dev build role for AWS.'
+    required: true
+  aws-role-prod:
+    description: 'The relevant prod build role for AWS.'
+    required: true
+  aws-role-stage:
+    description: 'The relevant stage build role for AWS.'
+    required: false
   aws-access-key-id:
-    description: 'AWS access key!'
+    description: 'AWS access key'
     required: true
   aws-secret-access-key:
-    description: 'AWS access key, but more secreter!'
+    description: 'AWS secret access key'
     required: true
   aws-region:
     description: 'Regionality of the AWS credentialing'
@@ -31,34 +37,52 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Set Build Role
+      id: set-role
+      uses: source-ip/actions-set-build-role@v1.0.0
+      with:
+        prod-role: ${{ inputs.aws-role-prod }}
+        stage-role: ${{ inputs.aws-role-stage }}
+        dev-role: ${{ inputs.aws-role-dev }}
+        environment-name: ${{ inputs.target-environment }}
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ inputs.aws-access-key-id }}
         aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
         aws-region: ${{ inputs.aws-region }}
-        role-to-assume: ${{ inputs.aws-build-role }}
+        role-to-assume: ${{ steps.set-role.outputs.build-role }}
+        role-duration-seconds: 1200
+        role-skip-session-tagging: true
     - name: Checkout
       uses: actions/checkout@v2
       with:
         repository: ${{ inputs.repository }}
         persist-credentials: false
-    - name: Setup Node    
-      uses: actions/setup-node@v1
+    - name: Setup Node
+      uses: actions/setup-node@v3
       with:
-        node-version: 15.x
+        node-version: 16
+        registry-url: https://npm.pkg.github.com/
+    - name: Set Package Source
+      shell: bash
+      run: |
+        echo @blubyrdapp:https://npm.pkg.github.com/ > .npmrc
+        echo '//npm.pkg.github.com/:_authToken=${{ inputs.token }}' >> .npmrc
+      env:
+        NODE_AUTH_TOKEN: ${{ inputs.token }}
     - name: Inject insteadOf configuration
       shell: bash
       run: |
         git config --global url."https://${{ inputs.token }}@github.com/".insteadOf ssh://git@github.com/
-        npm ci    
+        npm ci
     - name: Get App Config
-      uses: source-ip/actions-aws-ssm-get-by-path@v1
+      uses: source-ip/actions-aws-ssm-get-by-path@v1.0.0
       with:
-        paths: ${{ format('/app/{0}/env/{1}/', inputs.app-name, inputs.target-environment) }}
+        paths: ${{ format('/app/common/{0}/', inputs.target-environment) }}, ${{ format('/app/{0}/{1}/', inputs.app-name, inputs.target-environment) }}
         save-to-environment: true
         file: .env
-
+        decrypt: true
     - name: Set environment name
       shell: bash
       run: |
@@ -66,7 +90,7 @@ runs:
         echo "APP_ENV_NAME=$APP_ENV_NAME" >> .env
     - name: Build React App
       shell: bash
-      run: npm install && npm run build
+      run: npm run build
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
       with:
