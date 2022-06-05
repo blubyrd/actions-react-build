@@ -67,7 +67,7 @@ runs:
     - name: Set Package Source
       shell: bash
       run: |
-        echo @blubyrdapp:https://npm.pkg.github.com/ > .npmrc
+        echo @blubyrd:https://npm.pkg.github.com/ > .npmrc
         echo '//npm.pkg.github.com/:_authToken=${{ inputs.token }}' >> .npmrc
       env:
         NODE_AUTH_TOKEN: ${{ inputs.token }}
