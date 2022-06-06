@@ -59,6 +59,10 @@ runs:
       with:
         repository: ${{ inputs.repository }}
         persist-credentials: false
+    - name: Inject insteadOf configuration
+      shell: bash
+      run: |
+        git config --global url."https://${{ inputs.token }}@github.com/".insteadOf ssh://git@github.com/
     - name: Setup Node
       uses: actions/setup-node@v3
       with:
@@ -69,12 +73,10 @@ runs:
       run: |
         echo @blubyrd:https://npm.pkg.github.com/ > .npmrc
         echo '//npm.pkg.github.com/:_authToken=${{ inputs.token }}' >> .npmrc
+        echo ls
+        echo cat .npmrc
       env:
         NODE_AUTH_TOKEN: ${{ inputs.token }}
-    - name: Inject insteadOf configuration
-      shell: bash
-      run: |
-        git config --global url."https://${{ inputs.token }}@github.com/".insteadOf ssh://git@github.com/
     - name: Get App Config
       uses: source-ip/actions-aws-ssm-get-by-path@v1.0.0
       with:
