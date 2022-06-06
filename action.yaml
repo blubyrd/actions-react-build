@@ -73,7 +73,7 @@ runs:
       run: |
         echo @blubyrd:https://npm.pkg.github.com/ > .npmrc
         echo '//npm.pkg.github.com/:_authToken=${{ inputs.token }}' >> .npmrc
-        ls
+        ls -a
         cat .npmrc
       env:
         NODE_AUTH_TOKEN: ${{ inputs.token }}
