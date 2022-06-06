@@ -71,6 +71,10 @@ runs:
         echo '//npm.pkg.github.com/:_authToken=${{ inputs.token }}' >> .npmrc
       env:
         NODE_AUTH_TOKEN: ${{ inputs.token }}
+    - name: Inject insteadOf configuration
+      shell: bash
+      run: |
+        git config --global url."https://${{ inputs.token }}@github.com/".insteadOf ssh://git@github.com/
     - name: Get App Config
       uses: source-ip/actions-aws-ssm-get-by-path@v1.0.0
       with:
