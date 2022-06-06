@@ -73,8 +73,8 @@ runs:
       run: |
         echo @blubyrd:https://npm.pkg.github.com/ > .npmrc
         echo '//npm.pkg.github.com/:_authToken=${{ inputs.token }}' >> .npmrc
-        echo ls
-        echo cat .npmrc
+        ls
+        cat .npmrc
       env:
         NODE_AUTH_TOKEN: ${{ inputs.token }}
     - name: Get App Config
