@@ -67,15 +67,10 @@ runs:
     - name: Set Package Source
       shell: bash
       run: |
-        echo @blubyrd:registry=https://npm.pkg.github.com > .npmrc
-        echo '//npm.pkg.github.com/:_authToken=${{ inputs.token }}' >> .npmrc
+        echo @blubyrd:https://npm.pkg.github.com/ > .npmrc
+        echo '//npm.pkg.github.com/:_authToken=${{ secrets.PTR_GITHUB_TOKEN }}' >> .npmrc
       env:
         NODE_AUTH_TOKEN: ${{ inputs.token }}
-    - name: Inject insteadOf configuration
-      shell: bash
-      run: |
-        git config --global url."https://${{ inputs.token }}@github.com/".insteadOf ssh://git@github.com/
-        npm ci
     - name: Get App Config
       uses: source-ip/actions-aws-ssm-get-by-path@v1.0.0
       with:
@@ -90,7 +85,7 @@ runs:
         echo "APP_ENV_NAME=$APP_ENV_NAME" >> .env
     - name: Build React App
       shell: bash
-      run: npm run build
+      run: npm install && npm run build
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
       with:
