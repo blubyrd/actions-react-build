@@ -39,7 +39,7 @@ runs:
   steps:
     - name: Set Build Role
       id: set-role
-      uses: source-ip/actions-set-build-role@v1.0.0
+      uses: blubyrd/actions-set-build-role@v1.0.0
       with:
         prod-role: ${{ inputs.aws-role-prod }}
         stage-role: ${{ inputs.aws-role-stage }}
@@ -78,7 +78,7 @@ runs:
       env:
         NODE_AUTH_TOKEN: ${{ inputs.token }}
     - name: Get App Config
-      uses: source-ip/actions-aws-ssm-get-by-path@v1.0.0
+      uses: blubyrd/actions-aws-ssm-get-by-path@v1.0.0
       with:
         paths: ${{ format('/app/common/{0}/', inputs.target-environment) }}, ${{ format('/app/{0}/{1}/', inputs.app-name, inputs.target-environment) }}
         save-to-environment: true
