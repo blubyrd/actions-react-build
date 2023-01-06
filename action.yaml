@@ -12,6 +12,9 @@ inputs:
     description: 'Environment to deploy to'
     required: true
     default: 'None'
+  font-awesome-token:
+    description: 'The font-awesome token to authenticate with'
+    required: true
   token:
     description: 'The github token to authenticate with'
     required: true
@@ -73,6 +76,8 @@ runs:
       run: |
         echo @blubyrd:https://npm.pkg.github.com/ > .npmrc
         echo '//npm.pkg.github.com/:_authToken=${{ inputs.token }}' >> .npmrc
+        echo @fortawesome:https://npm.fontawesome.com/ >> .npmrc
+        echo '//npm.fontawesome.com/:_authToken=${{ inputs.font-awesome-token }}' >> .npmrc
         ls -a
         cat .npmrc
       env:
