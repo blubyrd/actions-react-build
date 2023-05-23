@@ -102,3 +102,4 @@ runs:
       with:
         name: client
         path: dist
+        retention-days: 5
